@@ -303,9 +303,6 @@ Runner 按 Story 顺序工作，并根据 `status.json.phase` 决定调用哪个
 
 因为当前主流程已经包含项目扫描、问题补充、PRD 整理和 Story 预览。直接运行 `worker.py` 更适合已有工件目录、明确知道自己在做什么的场景。
 
-## 补充说明
-
-[new_code/worker/README.md](/Volumes/DATA/GoWorkSpace/src/github.com/ai_auto_working_stiff/new_code/worker/README.md) 还保留了一部分旧版兼容流程说明，适合用来理解底层 Runner 的历史设计；实际使用时，以本 README 中描述的 Web 工作台流程为准。
 
 
 ![输入项目绝对路径](image.png)
