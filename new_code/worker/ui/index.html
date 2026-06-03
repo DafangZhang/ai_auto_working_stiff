@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Worker Workbench</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="topbar">
+            <div>
+                <h1>AI Worker Workbench</h1>
+                <p id="project-subtitle">等待选择项目</p>
+            </div>
+            <div class="status-bar">
+                <div class="status-actions">
+                    <button id="restart-session-button" type="button" class="ghost-button" onclick="restartSession()" disabled>重新开始</button>
+                </div>
+                <span id="overall-status">初始化中</span>
+                <span id="last-update">最后更新: --</span>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section id="main-panel" class="main-panel"></section>
+            <aside class="log-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>当前日志</h2>
+                        <p id="log-meta">暂无运行中的 Agent</p>
+                    </div>
+                    <button type="button" class="ghost-button" onclick="loadAllData()">刷新</button>
+                </div>
+                <div id="logs-content" class="logs-content">
+                    <p class="muted">暂无日志</p>
+                </div>
+            </aside>
+        </main>
+
+        <div id="story-modal" class="modal">
+            <div class="modal-content">
+                <button type="button" class="close" onclick="closeModal()">×</button>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

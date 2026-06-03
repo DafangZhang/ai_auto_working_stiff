@@ -1,0 +1,14 @@
+[2026-06-02 17:39:35] [INFO] ============================================================
+[2026-06-02 17:39:35] [INFO] Worker 启动
+[2026-06-02 17:39:35] [INFO] 项目目录: /Volumes/DATA/GoWorkSpace/src/github.com/ai_auto_working_stiff/new_code
+[2026-06-02 17:39:35] [INFO] 工件目录: /Volumes/DATA/GoWorkSpace/src/github.com/ai_auto_working_stiff/new_code/worker
+[2026-06-02 17:39:35] [INFO] Stories 目录: /Volumes/DATA/GoWorkSpace/src/github.com/ai_auto_working_stiff/new_code/worker/stories
+[2026-06-02 17:39:35] [INFO] 最大迭代次数: 1
+[2026-06-02 17:39:35] [INFO] Agent 超时: 1800s
+[2026-06-02 17:39:35] [INFO] ============================================================
+[2026-06-02 17:39:35] [INFO] 
+--- 迭代 1/1 ---
+[2026-06-02 17:39:35] [INFO] 没有可处理的 Story（可能都在等待依赖）
+[2026-06-02 17:39:35] [INFO] 等待 5 秒后重试...
+[2026-06-02 17:39:40] [WARNING] 
+达到最大迭代次数 (1)，退出

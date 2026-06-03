@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "name": "Worker",
+  "description": "自主 AI Agent 工作流系统",
+  "workflow": {
+    "phases": [
+      {
+        "name": "design",
+        "agent": "designer",
+        "next": "design_reviewed",
+        "maxRetries": 1
+      },
+      {
+        "name": "design_review",
+        "agent": "reviewer",
+        "next": "design_reviewed",
+        "maxRetries": 1
+      },
+      {
+        "name": "coding",
+        "agent": "coder",
+        "next": "coding_complete",
+        "maxRetries": 20
+      },
+      {
+        "name": "validation",
+        "agent": "validator",
+        "next": "done",
+        "maxRetries": 1
+      }
+    ]
+  },
+  "timeouts": {
+    "agent": 1800,
+    "poll": 5
+  },
+  "limits": {
+    "maxIterations": 100,
+    "maxRetries": 20
+  },
+  "ui": {
+    "port": 7332,
+    "pollInterval": 5000
+  },
+  "logging": {
+    "level": "INFO",
+    "maxLogFiles": 30
+  }
+}

@@ -1,0 +1,165 @@
+=== DESIGNER Agent - US-005-search-tools ===
+Started at: 2026-04-20T20:20:49.938469
+Command: claude --print --dangerously-skip-permissions # Designer Agent 指令
+
+你是 Story 设计 Agent，负责为每个 Story 创建详细的技术设计方案。
+
+## 核心职责
+- 读取当前任务和 Story 需求
+- 设计技术方案、文件结构、接口定义
+- 输出 design-v1.md 设计文档
+
+---
+
+## 强制前置检查
+
+**执行任何工作前，必须按顺序完成以下检查：**
+
+### 1. 获取当前任务
+**首先读取 `worker/worker_state.json` 获取当前任务：**
+```json
+{
+  "currentStoryId": "US-001-websocket-server",
+  "currentPhase": "design",
+  "currentAgent": "designer"
+}
+```
+
+- 如果 `currentAgent` 不是 `"designer"`，立即停止并报告错误
+- 如果 `currentStoryId` 为空，立即停止并报告错误
+- 记录 `currentStoryId`，后续所有操作都针对这个 story
+
+### 2. 验证 Story 状态
+读取 `worker/stories/{currentStoryId}/status.json`，确认：
+- `phase` 为 `"pending"`
+- 如果 phase 不是 "pending"，立即停止并报告错误
+
+### 3. 必须读取以下文件（缺少任何一个都停止工作）：
+- `worker/stories/{currentStoryId}/story.md` - Story 需求
+- `worker/shared/prd.md` - 产品需求文档
+- `worker/shared/mvp/` - MVP 实现参考
+- `worker/shared/AGENTS.md` - 项目架构规范
+
+### 4. 检查依赖 Story 是否已完成
+- 读取依赖 story 的 status.json
+- 如果依赖未完成，停止并报告
+
+---
+
+## 输出要求
+
+### 必须输出文件
+`worker/stories/{currentStoryId}/design-v1.md`
+
+**注意：使用从 worker_state.json 获取的 currentStoryId，不是硬编码的 story-id**
+
+### design-v1.md 必须包含以下章节
+
+```markdown
+# Design: US-005-search-tools - {title}
+
+## 1. 需求理解
+- Story 核心目标
+- 用户价值
+- 成功标准
+
+## 2. 技术方案
+- 整体架构
+- 关键组件
+- 数据流
+
+## 3. 文件结构
+```
+列出所有需要创建/修改的文件
+```
+
+## 4. 接口定义
+- API 接口（如果有）
+- 函数签名
+- 数据结构
+
+## 5. 依赖分析
+- 内部依赖（本项目其他模块）
+- 外部依赖（第三方库）
+- 依赖的 Story
+
+## 6. 实现步骤
+1. 步骤一
+2. 步骤二
+3. ...
+
+## 7. 风险点
+- 潜在风险
+- 应对措施
+
+## 8. 测试策略
+- 如何验证实现正确
+- 测试用例建议
+```
+
+---
+
+## 状态更新
+
+完成设计后，必须更新 `worker/stories/{currentStoryId}/status.json`：
+
+```json
+{
+  "phase": "designed",
+  "phases": {
+    "design": {
+      "status": "completed",
+      "version": 1,
+      "completedAt": "2024-01-15T10:00:00Z"
+    }
+  },
+  "updatedAt": "2024-01-15T10:00:00Z",
+  "history": [
+    {"timestamp": "2024-01-15T10:00:00Z", "action": "design_completed", "version": 1}
+  ]
+}
+```
+
+---
+
+## 禁止事项
+
+- ❌ 不要直接修改代码
+- ❌ 不要跳过任何前置检查
+- ❌ 不要假设文件存在，必须验证
+- ❌ 不要输出到 design-v2.md（那是 Reviewer 的工作）
+
+---
+
+## 设计原则
+
+1. **符合架构** - 严格遵循 AGENTS.md 中的项目架构
+2. **参考 MVP** - 优先复用 MVP 中的实现模式
+3. **可测试性** - 每个功能都要可验证
+4. **最小改动** - 只实现当前 Story 需要的功能
+
+==================================================
+
+设计完成。以下是本次设计的关键信息：
+
+**Story**: US-005-search-tools — searchWiki 与 listWikiPages Tool
+
+**输出文件**: `worker/stories/US-005-search-tools/design-v1.md`
+
+**核心设计决策**:
+- 创建两个 ES Module Extension：`.pi/extensions/wiki-search.js` 和 `.pi/extensions/wiki-list-pages.js`
+- `searchWiki` 支持 `title`（文件名匹配）、`content`（grep 内容搜索）、`tag`（frontmatter tags 匹配）三种模式
+- `listWikiPages` 支持 `directory` 子目录指定和 `recursive` 递归/非递归切换
+- tag 搜索内联轻量 frontmatter 解析，避免跨 Extension 耦合
+- 内容搜索在 Windows 环境回退到 Node.js 逐文件读取
+- `directory` 参数通过 `path.resolve` + `startsWith` 校验防止路径遍历
+
+**测试策略**:
+- 基于真实文件系统测试，复用 US-003 创建的 5 个带不同 tags 的 wiki 页面
+- 22 个测试用例覆盖 Tool 注册、三种搜索模式、递归/非递归列表、空目录边界、回归验证
+
+**状态更新**: `status.json` 已更新为 `phase: designed`，design 阶段标记为 `completed, version: 1`。
+[<u[?1004l[?2004l[?25h]9;4;0;]0;[?25h
+
+[EXIT] Agent exited with code 0
+Finished at: 2026-04-20T20:24:25.973580

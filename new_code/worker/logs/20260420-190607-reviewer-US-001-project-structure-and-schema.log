@@ -1,0 +1,192 @@
+=== REVIEWER Agent - US-001-project-structure-and-schema ===
+Started at: 2026-04-20T19:06:07.543383
+Command: claude --print --dangerously-skip-permissions # Reviewer Agent 指令
+
+你是设计审核 Agent，负责审核 Designer 的设计方案，并直接修改完善。
+
+## 核心职责
+- 读取当前任务和设计文档
+- 检查设计是否符合架构和需求
+- 直接修改 design.md，输出 design-v2.md
+- 生成审核报告
+
+---
+
+## 强制前置检查
+
+**执行任何工作前，必须按顺序完成以下检查：**
+
+### 1. 获取当前任务
+**首先读取 `worker/worker_state.json` 获取当前任务：**
+```json
+{
+  "currentStoryId": "US-001-websocket-server",
+  "currentPhase": "design_review",
+  "currentAgent": "reviewer"
+}
+```
+
+- 如果 `currentAgent` 不是 `"reviewer"`，立即停止并报告错误
+- 如果 `currentStoryId` 为空，立即停止并报告错误
+- 记录 `currentStoryId`，后续所有操作都针对这个 story
+
+### 2. 验证 Story 状态
+读取 `worker/stories/{currentStoryId}/status.json`，确认：
+- `phase` 为 `"designed"`
+- 如果 phase 不是 "designed"，立即停止并报告错误
+
+### 3. 必须读取以下文件（缺少任何一个都停止工作）：
+- `worker/stories/{currentStoryId}/design-v1.md` - Designer 的设计方案
+- `worker/stories/{currentStoryId}/story.md` - Story 需求
+- `worker/shared/prd.md` - 产品需求文档
+- `worker/shared/mvp/` - MVP 实现参考
+- `worker/shared/AGENTS.md` - 项目架构规范
+
+---
+
+## 审核检查清单
+
+### 架构合规性
+- [ ] 是否符合 AGENTS.md 定义的架构？
+- [ ] 文件位置是否符合项目规范？
+- [ ] 命名规范是否正确？
+
+### 需求覆盖
+- [ ] 是否完整覆盖了 story.md 的所有需求？
+- [ ] 是否符合 PRD 中的整体架构？
+- [ ] 是否参考了 MVP 的实现模式？
+- [ ] 是否遗漏了任何验收标准？
+- [ ] 是否有过度设计（实现不需要的功能）？
+
+### 技术合理性
+- [ ] 技术方案是否可行？
+- [ ] 依赖分析是否完整？
+- [ ] 风险点是否被识别？
+
+### 可测试性
+- [ ] 测试策略是否清晰？
+- [ ] 如何验证每个验收标准？
+
+### 接口定义
+- [ ] API/函数签名是否清晰？
+- [ ] 参数和返回值是否定义完整？
+- [ ] 错误处理是否考虑？
+
+---
+
+## 输出要求
+
+### 1. 修改后的设计文档
+**必须直接修改 `worker/stories/{currentStoryId}/design-v1.md`**
+
+修改后重命名为 `design-v2.md`：
+```bash
+mv worker/stories/US-001-project-structure-and-schema/design-v1.md worker/stories/US-001-project-structure-and-schema/design-v2.md
+```
+
+修改内容包括：
+- 补充遗漏的内容
+- 修正错误的设计
+- 完善接口定义
+- 添加审核者注释（用 [REVIEWER] 标记）
+
+### 2. 审核报告
+创建 `worker/stories/{currentStoryId}/design-review-report.md`：
+
+```markdown
+# Design Review Report: US-001-project-structure-and-schema
+
+## 审核时间
+{timestamp}
+
+## 审核结果
+[通过/需要修改]
+
+## 主要修改
+1. **修改点一**：原因...
+2. **修改点二**：原因...
+
+## 对开发者的建议
+- 建议一
+- 建议二
+
+## 风险提醒
+- 风险一及应对措施
+```
+
+---
+
+## 状态更新
+
+完成审核后，必须更新 `worker/stories/{currentStoryId}/status.json`：
+
+```json
+{
+  "phase": "design_reviewed",
+  "phases": {
+    "design": {
+      "status": "completed",
+      "version": 1
+    },
+    "design_review": {
+      "status": "completed",
+      "version": 2,
+      "completedAt": "2024-01-15T10:30:00Z"
+    }
+  },
+  "updatedAt": "2024-01-15T10:30:00Z",
+  "history": [
+    {"timestamp": "2024-01-15T10:30:00Z", "action": "design_review_completed", "version": 2}
+  ]
+}
+```
+
+---
+
+## 禁止事项
+
+- ❌ 不要创建新的 design-v1.md
+- ❌ 不要跳过审核直接通过
+- ❌ 不要修改代码
+- ❌ 不要修改 status.json 中的其他字段
+
+---
+
+## 审核原则
+
+1. **严格把关** - 设计缺陷要在本阶段发现，不要留给开发者
+2. **建设性修改** - 不仅指出问题，还要给出修改方案
+3. **保持简洁** - 不要过度设计，保持最小可行方案
+
+==================================================
+
+审核完成，以下是修改摘要：
+
+---
+
+## 审核结果：通过（经修改）
+
+对 `US-001-project-structure-and-schema` 的 design-v1.md 进行了 6 项关键修改，并输出为 **design-v2.md**。
+
+### 主要修改
+
+1. **补充 `analysis` 页面类型** — PRD BR-027 明确要求，原设计遗漏。
+2. **补充 `field_rules` 缺失规则** — 为 `title`、`created`、`updated` 补充了类型和格式校验规则。
+3. **补充 `raw/` 目录规则** — `directory_rules` 原仅覆盖 `wiki/`，现补充 `raw/articles/` 等命名规范。
+4. **补充 `.pi/wiki-audit.log`** — AGENTS.md 和 PRD BR-008 要求的审计日志文件，原清单遗漏。
+5. **提供 `schema.md` 标准内容模板** — 原设计无具体章节大纲，现补充 7 个标准章节，确保与 schema-config.yaml 一一对应。
+6. **扩展测试用例** — 增加 `overview.md`、`glossary.md` 的 frontmatter 和 type 合法性验证（共 20 条测试用例）。
+
+### 输出文件
+
+| 文件 | 说明 |
+|------|------|
+| `design-v2.md` | 修改后的设计方案 |
+| `design-review-report.md` | 完整审核报告（含修改原因、开发者建议、风险提醒） |
+| `status.json` | 已更新为 `design_reviewed` |
+
+`design-v1.md` 已删除。Coder 可基于 `design-v2.md` 开始实现。
+[<u[?1004l[?2004l[?25h]9;4;0;]0;[?25h
+
+[EXIT] Agent exited with code 0
+Finished at: 2026-04-20T19:09:31.039070

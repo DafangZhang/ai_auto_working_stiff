@@ -1,0 +1,78 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AI Worker: UI Server",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/new_code/worker/ui/server.py",
+      "cwd": "${workspaceFolder}/new_code/worker/ui",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "AI Worker: Runner",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/new_code/worker/worker.py",
+      "cwd": "${workspaceFolder}/new_code/worker",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--project-root",
+        "${input:projectRoot}",
+        "--artifact-root",
+        "${input:artifactRoot}",
+        "--max-iterations",
+        "${input:maxIterations}"
+      ]
+    },
+    {
+      "name": "AI Worker: Runner + UI",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/new_code/worker/worker.py",
+      "cwd": "${workspaceFolder}/new_code/worker",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--project-root",
+        "${input:projectRoot}",
+        "--artifact-root",
+        "${input:artifactRoot}",
+        "--max-iterations",
+        "${input:maxIterations}",
+        "--ui"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "AI Worker: UI + Runner",
+      "configurations": [
+        "AI Worker: UI Server",
+        "AI Worker: Runner"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "projectRoot",
+      "type": "promptString",
+      "description": "目标项目根目录",
+      "default": "${workspaceFolder}"
+    },
+    {
+      "id": "artifactRoot",
+      "type": "promptString",
+      "description": "工件目录，一般为 <project-root>/.ai-worker",
+      "default": "${workspaceFolder}/.ai-worker"
+    },
+    {
+      "id": "maxIterations",
+      "type": "promptString",
+      "description": "Worker 最大迭代次数",
+      "default": "100"
+    }
+  ]
+}

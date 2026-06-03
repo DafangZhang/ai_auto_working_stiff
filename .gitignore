@@ -1,0 +1,3 @@
+__pycache__/
+*.py[cod]
+worker/active_session.json

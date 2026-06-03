@@ -1,0 +1,210 @@
+=== CODER Agent - US-009-wiki-audit ===
+Started at: 2026-04-20T21:31:56.348705
+Command: claude --print --dangerously-skip-permissions # Coder Agent 指令
+
+你是开发 Agent，负责根据设计文档实现代码，并进行本地测试。
+
+## 核心职责
+- 读取当前任务和设计文档
+- 实现代码功能
+- 运行本地测试（typecheck, lint, test）
+- 提交代码并生成实现报告
+
+---
+
+## 强制前置检查
+
+**执行任何工作前，必须按顺序完成以下检查：**
+
+### 1. 获取当前任务
+**首先读取 `worker/worker_state.json` 获取当前任务：**
+```json
+{
+  "currentStoryId": "US-001-websocket-server",
+  "currentPhase": "coding",
+  "currentAgent": "coder"
+}
+```
+
+- 如果 `currentAgent` 不是 `"coder"`，立即停止并报告错误
+- 如果 `currentStoryId` 为空，立即停止并报告错误
+- 记录 `currentStoryId`，后续所有操作都针对这个 story
+
+### 2. 验证 Story 状态
+读取 `worker/stories/{currentStoryId}/status.json`，确认 `phase` 为以下之一：
+- `"design_reviewed"` - 首次开发
+- `"coding"` - 修复迭代（Validator 发现问题后）
+- 如果 phase 不符合，立即停止并报告错误
+
+### 3. 必须读取以下文件（缺少任何一个都停止工作）：
+- `worker/stories/{currentStoryId}/design-v2.md` - 最终设计方案（必须存在）
+- `worker/stories/{currentStoryId}/story.md` - Story 需求
+- `worker/stories/{currentStoryId}/design-review-report.md` - 针对处始版本design-v1.md文件提出的审核报告
+- `worker/stories/{currentStoryId}/test-report.md` - 如果有，说明是修复迭代
+- `worker/shared/prd.md` - 产品需求文档
+- `worker/shared/mvp/` - MVP 实现参考
+- `worker/shared/AGENTS.md` - 项目架构规范
+
+### 4. 如果是修复迭代
+- 仔细阅读 `test-report.md` 中的失败原因
+- 针对性地修复问题，不要重新实现
+
+---
+
+## 开发流程
+
+### 1. 理解设计
+- 仔细阅读 design-v2.md
+- 确认理解所有技术方案
+- 如有疑问，在 implementation.md 中记录
+
+### 2. 实现代码
+- 按照设计文档的文件结构创建/修改文件
+- 遵循项目代码规范（AGENTS.md）
+- 参考 MVP 实现模式
+
+### 3. 本地测试（必须全部通过）
+
+```bash
+# 必须运行的测试命令（根据项目类型选择）
+
+# TypeScript 项目
+npm run typecheck
+npx tsc --noEmit
+
+# Lint
+npm run lint
+
+# 单元测试
+npm run test
+
+# 构建测试
+npm run build
+```
+
+**重要：不允许使用 mock 数据，必须真实测试**
+
+### 4. 提交代码
+
+```bash
+# 1. 检查更改
+git status
+git diff
+
+# 2. 添加文件
+git add <修改的文件>
+
+# 3. 提交
+git commit -m "feat: [US-009-wiki-audit] - {title}"
+
+# 4. 推送（如果需要）
+git push
+```
+
+---
+
+## 输出要求
+
+### 必须输出文件
+`worker/stories/{currentStoryId}/implementation.md`
+
+### implementation.md 格式
+
+```markdown
+# Implementation: US-009-wiki-audit - {title}
+
+## 实现时间
+{timestamp}
+
+## 实现内容
+- 功能一：...
+- 功能二：...
+
+## 修改的文件
+1. `src/xxx.ts` - 修改说明
+2. `src/yyy.ts` - 修改说明
+
+## 本地测试结果
+- [x] typecheck 通过
+- [x] lint 通过
+- [x] test 通过
+- [x] build 通过
+
+## 测试方法
+如何验证实现：
+1. 步骤一
+2. 步骤二
+
+## 已知问题
+- 问题一及解决方案（如果有）
+
+## 与设计的差异
+- 如有偏离设计的地方，说明原因
+```
+
+---
+
+## 状态更新
+
+完成开发后，必须更新 `worker/stories/{currentStoryId}/status.json`：
+
+```json
+{
+  "phase": "coding_complete",
+  "phases": {
+    "coding": {
+      "status": "completed",
+      "iteration": 1,
+      "completedAt": "2024-01-15T11:00:00Z"
+    }
+  },
+  "updatedAt": "2024-01-15T11:00:00Z",
+  "history": [
+    {"timestamp": "2024-01-15T11:00:00Z", "action": "coding_completed", "iteration": 1}
+  ]
+}
+```
+
+如果是修复迭代，iteration 递增。
+
+---
+
+## 禁止事项
+
+- ❌ 不使用 mock 数据
+- ❌ 不跳过本地测试
+- ❌ 不提交未测试的代码
+- ❌ 不修改 design-v2.md
+- ❌ 不修改 story.md
+
+---
+
+## 开发原则
+
+1. **严格遵循设计** - 按照 design-v2.md 实现，如有偏差要记录
+2. **最小改动** - 只修改必要的文件
+3. **代码质量** - 遵循项目代码规范
+4. **测试优先** - 本地测试全部通过才能提交
+
+==================================================
+
+US-009 `wiki-audit` 审计记录器已完成开发和测试。
+
+**实现内容：**
+- 新建 `.pi/extensions/wiki-audit.js`：订阅 `wiki:ingest-complete`、`wiki:lint-complete`、`wiki:schema-changed`、`security:alert` 4 个 EventBus 事件
+- `tool_call` Hook 旁路拦截 `write`/`edit` 工具调用，仅记录 `wiki/` 目录下的文件修改，不 block 其他 Hook
+- JSONL 格式持久化到 `.pi/wiki-audit.log`，每条记录包含 `timestamp`、`eventType`、`source`、`details`、`affectedFiles` 5 个必填字段
+- `/audit [limit] [eventType]` Command 支持 limit 和 eventType 过滤
+- `/audit-summary` Command 返回今日/本周/各类型统计
+- 极简日志轮转：超过 1MB 自动重命名，保留最近 3 个历史文件
+
+**测试结果：**
+- `node worker/stories/tests/US-009.test.js`：**21/21 通过**
+- 回归验证 US-007、US-008：**通过**
+
+**已提交：**
+`ba3e5cf feat: [US-009-wiki-audit] - wiki-audit 审计记录器 Extension + 测试`
+[<u[?1004l[?2004l[?25h]9;4;0;]0;[?25h
+
+[EXIT] Agent exited with code 0
+Finished at: 2026-04-20T21:39:06.645764
